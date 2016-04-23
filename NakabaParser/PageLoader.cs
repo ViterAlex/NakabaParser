@@ -155,12 +155,13 @@ namespace SiteParser
             return result;
         }
 
-        private  void LoadPage(string pageUrl)
+        private async void LoadPage(string pageUrl)
         {
             using (var client = new WebClient())
             {
                 client.Encoding = Encoding.UTF8;
                 Task<string> t = client.DownloadStringTaskAsync(pageUrl);
+                await t;
                 OnPageLoaded(t.Result, pageUrl);
             }
         }
@@ -176,13 +177,13 @@ namespace SiteParser
             CurrentPage = GetCurrentPage(pageHtml);
             var totalAnnonces = GetAnnonceCount(pageHtml);
             PageLoaded?.Invoke(this, new PageLoadedEventArgs(CurrentPage, TotalPages, totalAnnonces));
-
-            new Task(s => Parser.Parse(s.ToString()), pageHtml).Start();
+            Parser.Parse(pageHtml);
+            //new Task(s => Parser.Parse(s.ToString()), pageHtml).Start();
             //return;
-            if (CurrentPage < TotalPages)
-            {
-                LoadPage(GetNextPageUrl(pageUrl));
-            }
+            //if (CurrentPage < TotalPages)
+            //{
+            //    LoadPage(GetNextPageUrl(pageUrl));
+            //}
         }
     }
 }

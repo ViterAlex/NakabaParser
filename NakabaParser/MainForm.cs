@@ -45,9 +45,9 @@ namespace SiteParser
         {
             _nakabaParser = new NakabaParser();
             SetEvents();
-            _pageLoader.LoadPage(_nakabaParser, urlTextBox.Text);
             flowLayoutPanel1.Controls.Clear();
             messageStatusLabel.Text = "Загрузка страницы...";
+            _pageLoader.LoadPage(_nakabaParser, urlTextBox.Text);
             AnnonceLoadState = AnnonceLoadStateEnum.Loading;
         }
 
@@ -70,28 +70,29 @@ namespace SiteParser
                 flowLayoutPanel1.Controls.Add(new AnnoncePresenter(content));
                 AnnonceLoadState = AnnonceLoadStateEnum.Loading;
             };
-            //Прогресс
-            Action<string, int, int> setProgress = (m, v, max) =>
+            //Отображение процесса загрузки в StatusBar
+            Action<int, int> setProgress = (v, max) =>
             {
                 ProgressBar1.Maximum = _nakabaParser.TotalAnnonces;
                 ProgressBar1.Value = _nakabaParser.AnnoncesParced;
-                messageStatusLabel.Text = $"Страница {_pageLoader.CurrentPage} из {_pageLoader.TotalPages}. Загружено объявлений {_nakabaParser.AnnoncesParced} из {_nakabaParser.TotalAnnonces}";
+                messageStatusLabel.Text = $"Страница {_pageLoader.CurrentPage} из {_pageLoader.TotalPages}. Загружено объявлений {v} из {max}";
             };
-
+            //Изменение состояния загрузки
             Action<AnnonceLoadStateEnum, PageLoadedEventArgs> setState = (s, args) =>
             {
                 AnnonceLoadState = s;
             };
-
+            //Событие обработанного объявления.
             _nakabaParser.AnnonceParsed += (s, args) =>
             {
                 this.InvokeEx(addAnnonce, args.Content);
+                this.InvokeEx(setProgress, args.Number, args.TotalAnnonces);
             };
-
+            //Событие изменение прогресса парсинга
             _nakabaParser.ParcingProgressChanged += (o, args) =>
             {
-                this.InvokeEx(setProgress, args.Message, (int)args.Parced, (int)args.TotalToParce);
             };
+            //Событие окончания парсинга
             _nakabaParser.ParsingEnded += (sender, args) =>
             {
                 this.InvokeEx(new Action(() =>
@@ -99,6 +100,7 @@ namespace SiteParser
                     AnnonceLoadState = AnnonceLoadStateEnum.Loaded;
                 }), null);
             };
+            //Событие окончания загрузки страницы
             _pageLoader.PageLoaded += (sender, args) =>
             {
                 this.InvokeEx(setState, AnnonceLoadStateEnum.Loading, args);

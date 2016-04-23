@@ -66,17 +66,18 @@ namespace SiteParser
         public async void LoadAnnonces()
         {
             counter = 0;
-            while (PagesQueue.Count != 0)
+            //while (PagesQueue.Count != 0)
+            //{
+            foreach (HtmlNode annonceNode in AnnonceNodes)
             {
-                foreach (HtmlNode annonceNode in PagesQueue.Dequeue())
-                {
-                    AnnonceNode = annonceNode;
-                    IAnnonceContent content = Task<IAnnonceContent>.Factory.StartNew(GetContent).Result;
-                    ParcingProgressChanged?.Invoke(this, new AnnonceParsingProgressEventArgs(++AnnoncesParced, TotalAnnonces, "Обработка сообщений"));
-                    AnnonceParsed?.Invoke(null, new AnnonceParsedEventArgs(content));
-                    Annonces.Add(content);
-                }
+                AnnonceNode = annonceNode;
+                IAnnonceContent content = await Task<IAnnonceContent>.Factory.StartNew(GetContent);
+                //ParcingProgressChanged?.Invoke(this, new AnnonceParsingProgressEventArgs(++AnnoncesParced, TotalAnnonces, "Обработка сообщений"));
+                Annonces.Add(content);
+                AnnonceParsed?.Invoke(null, new AnnonceParsedEventArgs(content, AnnoncesParced+1, TotalAnnonces));
+                AnnoncesParced++;
             }
+            //}
         }
 
         public Image GetImage()
@@ -117,13 +118,14 @@ namespace SiteParser
             _document.LoadHtml(url);
             AnnonceNodes = _document.DocumentNode.SelectNodes("//div[starts-with(@class,'objav-lister-item')]");
             TotalAnnonces += AnnonceNodes.Count;
-            if (PagesQueue.Count == 0)
-            {
-                PagesQueue.Enqueue(AnnonceNodes);
-                await new Task(LoadAnnonces);
-                //LoadAnnonces();
-            }
-            else PagesQueue.Enqueue(AnnonceNodes);
+            LoadAnnonces();
+            //if (PagesQueue.Count == 0)
+            //{
+            //    PagesQueue.Enqueue(AnnonceNodes);
+            //    await new Task(LoadAnnonces);
+            //    //LoadAnnonces();
+            //}
+            //else PagesQueue.Enqueue(AnnonceNodes);
         }
 
         private int _num;
