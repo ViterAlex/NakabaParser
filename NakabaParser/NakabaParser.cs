@@ -4,9 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
@@ -66,18 +64,15 @@ namespace SiteParser
         public async void LoadAnnonces()
         {
             counter = 0;
-            //while (PagesQueue.Count != 0)
-            //{
+            
             foreach (HtmlNode annonceNode in AnnonceNodes)
             {
                 AnnonceNode = annonceNode;
                 IAnnonceContent content = await Task<IAnnonceContent>.Factory.StartNew(GetContent);
-                //ParcingProgressChanged?.Invoke(this, new AnnonceParsingProgressEventArgs(++AnnoncesParced, TotalAnnonces, "Обработка сообщений"));
                 Annonces.Add(content);
                 AnnonceParsed?.Invoke(null, new AnnonceParsedEventArgs(content, AnnoncesParced+1, TotalAnnonces));
                 AnnoncesParced++;
             }
-            //}
         }
 
         public Image GetImage()
@@ -102,7 +97,7 @@ namespace SiteParser
 
         public string GetDescription()
         {
-            return AnnonceNode.SelectSingleNode(".//p[@class='describe']").InnerText;
+            return AnnonceNode.SelectSingleNode(".//p[@class='describe']").InnerHtml;
         }
 
         public decimal GetPrice()
@@ -112,20 +107,20 @@ namespace SiteParser
             return string.IsNullOrEmpty(value) ? 0 : decimal.Parse(value, CultureInfo.InvariantCulture);
         }
 
-        public async void Parse(string url)
+        private Semaphore semaphore;
+        public void Parse(string url)
         {
+            if (semaphore == null)
+            {
+                semaphore=new Semaphore(1,1);
+            }
+            semaphore.WaitOne();
             _document = new HtmlDocument();
             _document.LoadHtml(url);
             AnnonceNodes = _document.DocumentNode.SelectNodes("//div[starts-with(@class,'objav-lister-item')]");
             TotalAnnonces += AnnonceNodes.Count;
             LoadAnnonces();
-            //if (PagesQueue.Count == 0)
-            //{
-            //    PagesQueue.Enqueue(AnnonceNodes);
-            //    await new Task(LoadAnnonces);
-            //    //LoadAnnonces();
-            //}
-            //else PagesQueue.Enqueue(AnnonceNodes);
+            semaphore.Release();
         }
 
         private int _num;

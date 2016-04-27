@@ -105,7 +105,8 @@ namespace SiteParser
             this.urlTextBox.Name = "urlTextBox";
             this.urlTextBox.Size = new System.Drawing.Size(587, 22);
             this.urlTextBox.TabIndex = 2;
-            this.urlTextBox.Text = "http://market.nakaba.ru/search-results/?action=search&username[equal]=Relin";
+            this.urlTextBox.Text = "http://market.nakaba.ru/search-results/?action=search&username[equal]=Relin&listi" +
+    "ngs_per_page=100";
             this.urlTextBox.TextChanged += new System.EventHandler(this.urlTextBox_TextChanged);
             // 
             // statusStrip1

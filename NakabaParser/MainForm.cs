@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using SiteParser.Interfaces;
 using SiteParser.UserControls;
 
 //TODO: Удалять старые объявления при смене адреса
 //TODO: Разобраться с окончанием загрузки
-
+//TODO: Дописывать документ, а не создавать заново
+//TODO: Возможность приостановки и отмены скачивания
+//TODO: Задание количества объявлений для скачивания
+//TODO: Фильтрование объявлений по критериям
+//TODO: Парсинг цены из текста объявления, если цена не указана
 namespace SiteParser
 {
     public partial class MainForm : Form
@@ -13,10 +18,6 @@ namespace SiteParser
         private readonly PageLoader _pageLoader;
         private AnnonceLoadStateEnum _annonceLoadState;
         private NakabaParser _nakabaParser;
-        //private int _annoncesLoaded;
-        //private int _totalAnnoces;
-        //private int _currPageNum;
-        //private int _totalPages;
 
         public MainForm()
         {
@@ -36,9 +37,16 @@ namespace SiteParser
             }
         }
 
-        private void exportButton_Click(object sender, EventArgs e)
+        private  void exportButton_Click(object sender, EventArgs e)
         {
-            WordExporter.ExportAnnonces(_nakabaParser.Annonces);
+            ExportToWord();
+        }
+
+        private async void ExportToWord()
+        {
+            exportButton.Enabled = false;
+            await Task.Factory.StartNew(()=> WordExporter.ExportAnnonces(_nakabaParser.Annonces));
+            exportButton.Enabled = true;
         }
 
         private void getAnnoncesButton_Click(object sender, EventArgs e)

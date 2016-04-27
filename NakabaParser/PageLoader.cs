@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using HtmlAgilityPack;
 using SiteParser.Interfaces;
 
@@ -115,7 +115,7 @@ namespace SiteParser
         {
             const string pageToken = "page=";
             //Если в адресе нет токена текущей страницы
-            if (pageUrl.IndexOf($"{pageToken}", StringComparison.InvariantCultureIgnoreCase) == -1)
+            if (pageUrl.IndexOf($"&{pageToken}", StringComparison.InvariantCultureIgnoreCase) == -1)
             {
                 //то возвращаем адрес на вторую страницу
                 return $"{pageUrl}&{pageToken}2";
@@ -160,9 +160,9 @@ namespace SiteParser
             using (var client = new WebClient())
             {
                 client.Encoding = Encoding.UTF8;
-                Task<string> t = client.DownloadStringTaskAsync(pageUrl);
-                await t;
-                OnPageLoaded(t.Result, pageUrl);
+                var pageHtml = await client.DownloadStringTaskAsync(pageUrl);
+                OnPageLoaded(pageHtml, pageUrl);
+                Parser.Parse(pageHtml);
             }
         }
 
@@ -177,13 +177,15 @@ namespace SiteParser
             CurrentPage = GetCurrentPage(pageHtml);
             var totalAnnonces = GetAnnonceCount(pageHtml);
             PageLoaded?.Invoke(this, new PageLoadedEventArgs(CurrentPage, TotalPages, totalAnnonces));
-            Parser.Parse(pageHtml);
-            //new Task(s => Parser.Parse(s.ToString()), pageHtml).Start();
-            //return;
-            //if (CurrentPage < TotalPages)
-            //{
-            //    LoadPage(GetNextPageUrl(pageUrl));
-            //}
-        }
+#if DEBUG
+
+            return;
+#else
+            if (CurrentPage < TotalPages)
+            {
+                LoadPage(GetNextPageUrl(pageUrl));
+            }
+#endif
+            }
     }
 }
