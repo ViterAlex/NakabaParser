@@ -9,7 +9,7 @@ namespace SiteParser
         public int Number { get; set; }
         public int TotalAnnonces { get; set; }
 
-        public AnnonceParsedEventArgs(IAnnonceContent content,int number,int total)
+        public AnnonceParsedEventArgs(IAnnonceContent content, int number, int total)
         {
             Content = content;
             Number = number;

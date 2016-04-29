@@ -5,12 +5,12 @@ using SiteParser.Interfaces;
 using SiteParser.UserControls;
 
 //TODO: Удалять старые объявления при смене адреса
-//TODO: Разобраться с окончанием загрузки
 //TODO: Дописывать документ, а не создавать заново
 //TODO: Возможность приостановки и отмены скачивания
 //TODO: Задание количества объявлений для скачивания
 //TODO: Фильтрование объявлений по критериям
-//TODO: Парсинг цены из текста объявления, если цена не указана
+//TODO: Парсинг цены из текста объявления, если цена не указана в отдельном блоке
+//TODO: Отойти от использования событий, заменив их на DataBinding
 namespace SiteParser
 {
     public partial class MainForm : Form
@@ -37,7 +37,7 @@ namespace SiteParser
             }
         }
 
-        private  void exportButton_Click(object sender, EventArgs e)
+        private void exportButton_Click(object sender, EventArgs e)
         {
             ExportToWord();
         }
@@ -45,16 +45,16 @@ namespace SiteParser
         private async void ExportToWord()
         {
             exportButton.Enabled = false;
-            await Task.Factory.StartNew(()=> WordExporter.ExportAnnonces(_nakabaParser.Annonces));
+            await Task.Factory.StartNew(() => WordExporter.ExportAnnonces(_nakabaParser.Annonces));
             exportButton.Enabled = true;
         }
 
         private void getAnnoncesButton_Click(object sender, EventArgs e)
         {
             _nakabaParser = new NakabaParser();
+            //statusStrip1.DataBindings.Add("Visible", _nakabaParser, "ParcingFinished", false, DataSourceUpdateMode.OnPropertyChanged);
             SetEvents();
             flowLayoutPanel1.Controls.Clear();
-            messageStatusLabel.Text = "Загрузка страницы...";
             _pageLoader.LoadPage(_nakabaParser, urlTextBox.Text);
             AnnonceLoadState = AnnonceLoadStateEnum.Loading;
         }
@@ -83,7 +83,10 @@ namespace SiteParser
             {
                 ProgressBar1.Maximum = _nakabaParser.TotalAnnonces;
                 ProgressBar1.Value = _nakabaParser.AnnoncesParced;
-                messageStatusLabel.Text = $"Страница {_pageLoader.CurrentPage} из {_pageLoader.TotalPages}. Загружено объявлений {v} из {max}";
+                currentAnnonceNumStatusLabel.Text = _nakabaParser.AnnoncesParced.ToString();
+                totalAnnoncesStatusLabel.Text = _nakabaParser.TotalAnnonces.ToString();
+                currentPageNumStatusLabel.Text = _pageLoader.CurrentPage.ToString();
+                totalPagesStatusLabel.Text = _pageLoader.TotalPages.ToString();
             };
             //Изменение состояния загрузки
             Action<AnnonceLoadStateEnum, PageLoadedEventArgs> setState = (s, args) =>
@@ -95,10 +98,6 @@ namespace SiteParser
             {
                 this.InvokeEx(addAnnonce, args.Content);
                 this.InvokeEx(setProgress, args.Number, args.TotalAnnonces);
-            };
-            //Событие изменение прогресса парсинга
-            _nakabaParser.ParcingProgressChanged += (o, args) =>
-            {
             };
             //Событие окончания парсинга
             _nakabaParser.ParsingEnded += (sender, args) =>

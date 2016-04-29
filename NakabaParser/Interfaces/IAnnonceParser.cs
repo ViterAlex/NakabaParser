@@ -14,11 +14,10 @@ namespace SiteParser.Interfaces
         int TotalAnnonces { get; set; }
         HtmlNode AnnonceNode { get; set; }
 
-        List<IAnnonceContent> Annonces { get; }
+        IEnumerable<IAnnonceContent> Annonces { get; }
         event EventHandler<AnnonceParsedEventArgs> AnnonceParsed;
         event EventHandler Cleared;
-        event EventHandler ParsingEnded; 
-        event EventHandler<AnnonceParsingProgressEventArgs> ParcingProgressChanged;
+        event EventHandler ParsingEnded;
         void ClearAnnonces();
         IAnnonceContent GetContent();
 
