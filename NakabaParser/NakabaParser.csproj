@@ -95,6 +95,7 @@
     <Compile Include="Annonce.cs" />
     <Compile Include="Interfaces\IPageLoader.cs" />
     <Compile Include="PageLoadedEventArgs.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="UserControls\AnnoncePresenter.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -108,7 +109,6 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="AnnonceParsedEventArgs.cs" />
-    <Compile Include="AnnonceParsingProgressEventArgs.cs" />
     <Compile Include="Interfaces\IAnnonceContent.cs" />
     <Compile Include="Interfaces\IAnnonceParser.cs" />
     <Compile Include="NakabaParser.cs" />
@@ -133,6 +133,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="NakabaClassDiagram.cd" />
     <None Include="Docs\annonceTemplate.dotm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

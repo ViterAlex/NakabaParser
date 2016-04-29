@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -52,10 +51,17 @@ namespace SiteParser
             }
         }
 
+        public bool IsBusy { get; set; }
+
         /// <summary>
         ///     Парсер объявлений
         /// </summary>
         public IAnnonceParser Parser { get; set; }
+
+        public void Cancel()
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         ///     Метод осуществляет загрузку страниц
@@ -66,6 +72,11 @@ namespace SiteParser
         {
             Parser = parser;
             LoadPage(pageUrl);
+        }
+
+        public void Pause()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -125,11 +136,11 @@ namespace SiteParser
             return tokens.Aggregate((first, second) =>
             {
                 int pageNum;
-                if (first.StartsWith(pageToken))
-                {
-                    pageNum = int.Parse(first.Substring(pageToken.Length));
-                    return $"{pageToken}{pageNum + 1}&{second}";
-                }
+                //if (first.StartsWith(pageToken))
+                //{
+                //    pageNum = int.Parse(first.Substring(pageToken.Length));
+                //    return $"{pageToken}{pageNum + 1}&{second}";
+                //}
                 if (second.StartsWith(pageToken))
                 {
                     pageNum = int.Parse(second.Substring(pageToken.Length));
@@ -179,13 +190,12 @@ namespace SiteParser
             PageLoaded?.Invoke(this, new PageLoadedEventArgs(CurrentPage, TotalPages, totalAnnonces));
 #if DEBUG
 
-            return;
 #else
             if (CurrentPage < TotalPages)
             {
                 LoadPage(GetNextPageUrl(pageUrl));
             }
 #endif
-            }
+        }
     }
 }
