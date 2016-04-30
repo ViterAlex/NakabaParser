@@ -13,7 +13,9 @@ namespace SiteParser
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            MainForm mainForm = new MainForm();
+            Presenter presenter = new Presenter(mainForm);
+            Application.Run(mainForm);
         }
     }
 }

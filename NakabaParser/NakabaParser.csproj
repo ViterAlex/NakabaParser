@@ -92,9 +92,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Annonce.cs" />
+    <Compile Include="ControlHelper.cs" />
+    <Compile Include="Export to Word\ExportingProgressChangedEventArgs.cs" />
+    <Compile Include="Interfaces\IView.cs" />
+    <Compile Include="Parsing annonces\Annonce.cs" />
     <Compile Include="Interfaces\IPageLoader.cs" />
-    <Compile Include="PageLoadedEventArgs.cs" />
+    <Compile Include="Loading pages\PageLoadedEventArgs.cs" />
+    <Compile Include="Presenter.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="UserControls\AnnoncePresenter.cs">
       <SubType>UserControl</SubType>
@@ -108,14 +112,14 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="AnnonceParsedEventArgs.cs" />
+    <Compile Include="Parsing annonces\AnnonceParsedEventArgs.cs" />
     <Compile Include="Interfaces\IAnnonceContent.cs" />
     <Compile Include="Interfaces\IAnnonceParser.cs" />
-    <Compile Include="NakabaParser.cs" />
-    <Compile Include="PageLoader.cs" />
+    <Compile Include="Parsing annonces\NakabaParser.cs" />
+    <Compile Include="Loading pages\PageLoader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WordExporter.cs" />
+    <Compile Include="Export to Word\WordExporter.cs" />
     <EmbeddedResource Include="UserControls\AnnoncePresenter.resx">
       <DependentUpon>AnnoncePresenter.cs</DependentUpon>
     </EmbeddedResource>
@@ -169,6 +173,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\DataSources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UserControls\AnnoncePresenter.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

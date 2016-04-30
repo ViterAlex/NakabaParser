@@ -33,7 +33,7 @@
             this.priceLabel = new System.Windows.Forms.Label();
             this.descriptionLabel = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
+            this.idLabel = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -68,7 +68,7 @@
             this.titleLabel.Name = "titleLabel";
             this.titleLabel.Size = new System.Drawing.Size(236, 27);
             this.titleLabel.TabIndex = 1;
-            this.titleLabel.Text = "label1";
+            this.titleLabel.Text = "idLabel";
             this.titleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // priceLabel
@@ -95,7 +95,7 @@
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.label1);
+            this.panel1.Controls.Add(this.idLabel);
             this.panel1.Controls.Add(this.pictureBox1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(3, 3);
@@ -104,17 +104,17 @@
             this.panel1.Size = new System.Drawing.Size(135, 142);
             this.panel1.TabIndex = 3;
             // 
-            // label1
+            // idLabel
             // 
-            this.label1.AutoSize = true;
-            this.label1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label1.Location = new System.Drawing.Point(0, 122);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(57, 20);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "label1";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.idLabel.AutoSize = true;
+            this.idLabel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.idLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.idLabel.Location = new System.Drawing.Point(0, 122);
+            this.idLabel.Name = "idLabel";
+            this.idLabel.Size = new System.Drawing.Size(67, 20);
+            this.idLabel.TabIndex = 1;
+            this.idLabel.Text = "idLabel";
+            this.idLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // pictureBox1
             // 
@@ -149,6 +149,6 @@
         private System.Windows.Forms.Label priceLabel;
         private System.Windows.Forms.Label descriptionLabel;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label idLabel;
     }
 }

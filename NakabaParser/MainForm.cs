@@ -1,6 +1,8 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows.Forms;
+using SiteParser.Annotations;
 using SiteParser.Interfaces;
 using SiteParser.UserControls;
 
@@ -10,137 +12,220 @@ using SiteParser.UserControls;
 //TODO: Задание количества объявлений для скачивания
 //TODO: Фильтрование объявлений по критериям
 //TODO: Парсинг цены из текста объявления, если цена не указана в отдельном блоке
-//TODO: Отойти от использования событий, заменив их на DataBinding
+
 namespace SiteParser
 {
-    public partial class MainForm : Form
+    public sealed partial class MainForm : Form, IView
     {
-        private readonly PageLoader _pageLoader;
-        private AnnonceLoadStateEnum _annonceLoadState;
-        private NakabaParser _nakabaParser;
+        private int _currentAnnonce;
+        private int _currentPage;
+        private int _progress;
+        private int _totalAnnonces;
+        private int _totalPages;
+        private bool _isParsing;
+        private bool _isExporting;
+        private string _progressMessage;
 
         public MainForm()
         {
             InitializeComponent();
-            AnnonceLoadState = AnnonceLoadStateEnum.NotLoaded;
-            _pageLoader = new PageLoader();
-            SetControlsState(AnnonceLoadState);
+            SetBindings();
         }
 
-        private AnnonceLoadStateEnum AnnonceLoadState
+        #region Implementation of INotifyPropertyChanged
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        /// <summary>
+        ///     Клонирование привязки на другой контрол
+        /// </summary>
+        private static void CloneBinding(IBindableComponent control, Binding bind)
         {
-            get { return _annonceLoadState; }
-            set
-            {
-                _annonceLoadState = value;
-                SetControlsState(_annonceLoadState);
-            }
+            var bind1 = new Binding(bind.PropertyName, bind.DataSource, bind.BindingMemberInfo.BindingMember);
+            control.DataBindings.Add(bind1);
         }
 
         private void exportButton_Click(object sender, EventArgs e)
         {
-            ExportToWord();
+            ExportToWord?.Invoke(this, new EventArgs());
         }
 
-        private async void ExportToWord()
+        private void loadAnnoncesButton_Click(object sender, EventArgs e)
         {
-            exportButton.Enabled = false;
-            await Task.Factory.StartNew(() => WordExporter.ExportAnnonces(_nakabaParser.Annonces));
-            exportButton.Enabled = true;
+            LoadAnnonces?.Invoke(this, new EventArgs());
         }
 
-        private void getAnnoncesButton_Click(object sender, EventArgs e)
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            _nakabaParser = new NakabaParser();
-            //statusStrip1.DataBindings.Add("Visible", _nakabaParser, "ParcingFinished", false, DataSourceUpdateMode.OnPropertyChanged);
-            SetEvents();
-            flowLayoutPanel1.Controls.Clear();
-            _pageLoader.LoadPage(_nakabaParser, urlTextBox.Text);
-            AnnonceLoadState = AnnonceLoadStateEnum.Loading;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        /// <summary>
-        ///     Устанавливает состояние элементов управления
-        /// </summary>
-        /// <param name="state">Состояние программы.</param>
-        private void SetControlsState(AnnonceLoadStateEnum state)
+        private void pauseButton_Click(object sender, EventArgs e)
         {
-            getAnnoncesButton.Enabled = state == AnnonceLoadStateEnum.NotLoaded || state == AnnonceLoadStateEnum.Loaded;
-            exportButton.Enabled = state == AnnonceLoadStateEnum.Loaded;
-            statusStrip1.Visible = state == AnnonceLoadStateEnum.Loading;
+            Pause?.Invoke(this, new EventArgs());
         }
 
-        private void SetEvents()
+        private void SetBindings()
         {
-            //Добавление объявления в контейнер FlowLayoutPanel
-            Action<IAnnonceContent> addAnnonce = content =>
+            bindingSource.DataSource = typeof(MainForm);
+            bindingSource.Add(this);
+            //Привязка к свойство IsParsing
+            var bindingEnabled = new Binding("Enabled", bindingSource, "IsParsing", true,
+                DataSourceUpdateMode.OnPropertyChanged);
+            bindingEnabled.Format += (sender, args) =>
             {
-                flowLayoutPanel1.Controls.Add(new AnnoncePresenter(content));
-                AnnonceLoadState = AnnonceLoadStateEnum.Loading;
+                if (args.DesiredType != typeof(bool)) return;
+                var val = (bool)args.Value;
+                loadAnnoncesButton.Enabled = !val;
             };
-            //Отображение процесса загрузки в StatusBar
-            Action<int, int> setProgress = (v, max) =>
-            {
-                ProgressBar1.Maximum = _nakabaParser.TotalAnnonces;
-                ProgressBar1.Value = _nakabaParser.AnnoncesParced;
-                currentAnnonceNumStatusLabel.Text = _nakabaParser.AnnoncesParced.ToString();
-                totalAnnoncesStatusLabel.Text = _nakabaParser.TotalAnnonces.ToString();
-                currentPageNumStatusLabel.Text = _pageLoader.CurrentPage.ToString();
-                totalPagesStatusLabel.Text = _pageLoader.TotalPages.ToString();
-            };
-            //Изменение состояния загрузки
-            Action<AnnonceLoadStateEnum, PageLoadedEventArgs> setState = (s, args) =>
-            {
-                AnnonceLoadState = s;
-            };
-            //Событие обработанного объявления.
-            _nakabaParser.AnnonceParsed += (s, args) =>
-            {
-                this.InvokeEx(addAnnonce, args.Content);
-                this.InvokeEx(setProgress, args.Number, args.TotalAnnonces);
-            };
-            //Событие окончания парсинга
-            _nakabaParser.ParsingEnded += (sender, args) =>
-            {
-                this.InvokeEx(new Action(() =>
-                {
-                    AnnonceLoadState = AnnonceLoadStateEnum.Loaded;
-                }), null);
-            };
-            //Событие окончания загрузки страницы
-            _pageLoader.PageLoaded += (sender, args) =>
-            {
-                this.InvokeEx(setState, AnnonceLoadStateEnum.Loading, args);
-            };
+
+            pauseButton.DataBindings.Add(bindingEnabled);
+
+            CloneBinding(stopButton, bindingEnabled);
+
+            var bindingIsParcing = new Binding("Visible", bindingSource, "IsParcing", false,
+                DataSourceUpdateMode.OnPropertyChanged);
+            parsingStatusStrip.DataBindings.Add(bindingIsParcing);
+
+            var bindingIsExporting = new Binding("Visible", bindingSource, "IsExporting", false,
+                DataSourceUpdateMode.OnPropertyChanged);
+            exportStatusStrip.DataBindings.Add(bindingIsExporting);
+        }
+
+        private void stopButton_Click(object sender, EventArgs e)
+        {
+            Stop?.Invoke(this, new EventArgs());
         }
 
         private void urlTextBox_TextChanged(object sender, EventArgs e)
         {
-            getAnnoncesButton.Enabled = urlTextBox.Text.Length > 0;
+            loadAnnoncesButton.Enabled = urlTextBox.Text.Length > 0;
         }
 
-        [Flags]
-        private enum AnnonceLoadStateEnum
-        {
-            Loading,
-            NotLoaded,
-            Loaded
-        }
+        #region Implementation of IView
 
-
-    }
-    public static class ControlHelper
-    {
-        public static void InvokeEx(this Control control, Delegate method, params object[] param)
+        #region Свойства
+        public bool IsExporting
         {
-            if (control.InvokeRequired)
+            get { return _isExporting; }
+            set
             {
-                control.Invoke(method, param);
-            }
-            else
-            {
-                method.DynamicInvoke(param);
+                if (value == _isExporting) return;
+                _isExporting = value;
+                exportStatusStrip.Visible = _isExporting;
+                OnPropertyChanged();
             }
         }
+
+        public int CurrentPage
+        {
+            get { return _currentPage; }
+            set
+            {
+                if (value == _currentPage) return;
+                _currentPage = value;
+                currentPageNumStatusLabel.Text = _currentPage.ToString();
+                OnPropertyChanged();
+            }
+        }
+
+        public int TotalPages
+        {
+            get { return _totalPages; }
+            set
+            {
+                if (value == _totalPages) return;
+                _totalPages = value;
+                totalPagesStatusLabel.Text = _totalPages.ToString();
+                OnPropertyChanged();
+            }
+        }
+
+        public int CurrentAnnonce
+        {
+            get { return _currentAnnonce; }
+            set
+            {
+                if (value == _currentAnnonce) return;
+                _currentAnnonce = value;
+                currentAnnonceNumStatusLabel.Text = _currentAnnonce.ToString();
+                OnPropertyChanged();
+            }
+        }
+
+        public int TotalAnnonces
+        {
+            get { return _totalAnnonces; }
+            set
+            {
+                if (value == _totalAnnonces) return;
+                _totalAnnonces = value;
+                totalAnnoncesStatusLabel.Text = _totalAnnonces.ToString();
+                OnPropertyChanged();
+            }
+        }
+
+        public int Progress
+        {
+            get { return _progress; }
+            set
+            {
+                if (value == _progress) return;
+                _progress = value;
+                exportProgressBar.Value = _progress;
+                parsingProgressBar.Value = _progress;
+                OnPropertyChanged();
+            }
+        }
+
+        public string ProgressMessage
+        {
+            get { return _progressMessage; }
+            set
+            {
+                if (value == _progressMessage) return;
+                _progressMessage = value;
+                exportMessageStatusLabel.Text = _progressMessage;
+                OnPropertyChanged();
+            }
+        }
+
+
+        public bool IsParsing
+        {
+            get { return _isParsing; }
+
+            set
+            {
+                if (value == _isParsing) return;
+                _isParsing = value;
+                OnPropertyChanged();
+            }
+        }
+        #endregion
+
+
+        #region События
+        public event EventHandler LoadAnnonces;
+        public event EventHandler Pause;
+        public event EventHandler Stop;
+        public event EventHandler ExportToWord;
+        #endregion
+        #region Методы
+        public string GetUrl()
+        {
+            return urlTextBox.Text;
+        }
+
+        public void AddAnnonce(IAnnonceContent content)
+        {
+            flowLayoutPanel1.Controls.Add(new AnnoncePresenter(content));
+        }
+        #endregion
+
+        #endregion
     }
 }
