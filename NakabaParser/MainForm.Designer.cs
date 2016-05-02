@@ -94,7 +94,7 @@ namespace SiteParser
             this.urlTextBox.Location = new System.Drawing.Point(3, 3);
             this.urlTextBox.Name = "urlTextBox";
             this.urlTextBox.Size = new System.Drawing.Size(641, 22);
-            this.urlTextBox.TabIndex = 2;
+            this.urlTextBox.TabIndex = 0;
             this.urlTextBox.Text = "http://market.nakaba.ru/search-results/?action=search&username[equal]=Relin&listi" +
     "ngs_per_page=10";
             this.urlTextBox.TextChanged += new System.EventHandler(this.urlTextBox_TextChanged);
@@ -126,7 +126,7 @@ namespace SiteParser
             this.pauseButton.Location = new System.Drawing.Point(78, 3);
             this.pauseButton.Name = "pauseButton";
             this.pauseButton.Size = new System.Drawing.Size(48, 23);
-            this.pauseButton.TabIndex = 4;
+            this.pauseButton.TabIndex = 1;
             this.pauseButton.Text = "Пауза";
             this.pauseButton.UseVisualStyleBackColor = true;
             this.pauseButton.Click += new System.EventHandler(this.pauseButton_Click);
@@ -150,7 +150,7 @@ namespace SiteParser
             this.loadAnnoncesButton.Location = new System.Drawing.Point(3, 3);
             this.loadAnnoncesButton.Name = "loadAnnoncesButton";
             this.loadAnnoncesButton.Size = new System.Drawing.Size(69, 23);
-            this.loadAnnoncesButton.TabIndex = 1;
+            this.loadAnnoncesButton.TabIndex = 0;
             this.loadAnnoncesButton.Text = "Загрузить";
             this.loadAnnoncesButton.UseVisualStyleBackColor = true;
             this.loadAnnoncesButton.Click += new System.EventHandler(this.loadAnnoncesButton_Click);
@@ -162,7 +162,7 @@ namespace SiteParser
             this.stopButton.Location = new System.Drawing.Point(132, 3);
             this.stopButton.Name = "stopButton";
             this.stopButton.Size = new System.Drawing.Size(41, 23);
-            this.stopButton.TabIndex = 3;
+            this.stopButton.TabIndex = 2;
             this.stopButton.Text = "Стоп";
             this.stopButton.UseVisualStyleBackColor = true;
             this.stopButton.Click += new System.EventHandler(this.stopButton_Click);
@@ -185,6 +185,7 @@ namespace SiteParser
             this.parsingStatusStrip.TabIndex = 3;
             this.parsingStatusStrip.Text = "statusStrip1";
             this.parsingStatusStrip.Visible = false;
+            this.parsingStatusStrip.VisibleChanged += new System.EventHandler(this.parsingStatusStrip_VisibleChanged);
             // 
             // pageImageStatusLabel
             // 

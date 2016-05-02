@@ -98,6 +98,8 @@
     <Compile Include="Parsing annonces\Annonce.cs" />
     <Compile Include="Interfaces\IPageLoader.cs" />
     <Compile Include="Loading pages\PageLoadedEventArgs.cs" />
+    <Compile Include="PauseToken.cs" />
+    <Compile Include="PauseTokenSource.cs" />
     <Compile Include="Presenter.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="UserControls\AnnoncePresenter.cs">

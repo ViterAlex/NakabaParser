@@ -10,7 +10,7 @@ namespace SiteParser.Interfaces
         IAnnonceParser Parser { get; set; }
         event EventHandler<PageLoadedEventArgs> PageLoaded;
         void Cancel();
-        void LoadPage(IAnnonceParser parser, string pageUrl);
+        void LoadAnnoncesOnPage(IAnnonceParser parser, string pageUrl);
         void Pause();
     }
 }

@@ -5,10 +5,10 @@ namespace SiteParser
 {
     public class AnnonceParsedEventArgs : EventArgs
     {
-        public IAnnonceContent Content { get; set; }
-        public int Number { get; set; }
-        public int TotalAnnonces { get; set; }
-
+        public IAnnonceContent Content { get; private set; }
+        public int Number { get; private set; }
+        public int TotalAnnonces { get; private set; }
+        public int Progress => Number * 100 / TotalAnnonces;
         public AnnonceParsedEventArgs(IAnnonceContent content, int number, int total)
         {
             Content = content;

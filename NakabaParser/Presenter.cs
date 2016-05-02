@@ -37,7 +37,7 @@ namespace SiteParser
             _view.AddAnnonce(e.Content);
             _view.TotalAnnonces = e.TotalAnnonces;
             _view.CurrentAnnonce = e.Number;
-            _view.Progress = e.Number * 100 / e.TotalAnnonces;
+            _view.Progress = e.Progress;
         }
 
         private void _pageLoader_PageLoaded(object sender, PageLoadedEventArgs e)
@@ -60,10 +60,15 @@ namespace SiteParser
         private void _view_LoadAnnonces(object sender, EventArgs e)
         {
             _view.IsParsing = true;
-            _pageLoader.LoadPage(_annonceParser, _view.GetUrl());
+            _pageLoader.LoadAnnoncesOnPage(_annonceParser, _view.GetUrl());
         }
 
-        private async void _view_ExportToWord(object sender, EventArgs e)
+        private  void _view_ExportToWord(object sender, EventArgs e)
+        {
+            ExportToWord();
+        }
+
+        private async void ExportToWord()
         {
             _view.IsExporting = true;
             WordExporter.ProgressChanged += (o, args) =>

@@ -17,15 +17,11 @@ namespace SiteParser
 
         private int _annoncesParced;
         private HtmlDocument _document;
-
         private Semaphore _semaphore;
-
         private HtmlNodeCollection AnnonceNodes { get; set; }
-
-        public bool ParcingFinished { get; private set; }
-
+        private bool ParcingFinished { get; set; }
         private Semaphore Semaphore => _semaphore ?? (_semaphore = new Semaphore(1, 1));
-
+        private PauseToken _pauseToken;
         /// <summary>
         ///     Событие, возникающее по окончании парсинга одного сообщения
         /// </summary>
@@ -92,6 +88,12 @@ namespace SiteParser
             return string.IsNullOrEmpty(value) ? 0 : decimal.Parse(value, CultureInfo.InvariantCulture);
         }
 
+        public void Parse(string url, PauseTokenSource pauseTokenSource,CancellationTokenSource cancellationTokenSource)
+        {
+            _pauseToken = pauseTokenSource.Token;
+            Parse(url);
+        }
+
         public void Parse(string url)
         {
             Semaphore.WaitOne();
@@ -101,6 +103,16 @@ namespace SiteParser
             TotalAnnonces += AnnonceNodes.Count;
             LoadAnnonces();
             Semaphore.Release();
+        }
+
+        public void Pause()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Stop()
+        {
+            throw new NotImplementedException();
         }
 
         public IAnnonceContent GetContent()
@@ -121,7 +133,7 @@ namespace SiteParser
             Cleared?.Invoke(this, new EventArgs());
         }
 
-        public async void LoadAnnonces()
+        private async void LoadAnnonces()
         {
             if (_annonces == null)
             {
@@ -130,6 +142,7 @@ namespace SiteParser
             foreach (HtmlNode annonceNode in AnnonceNodes)
             {
                 AnnonceNode = annonceNode;
+                await _pauseToken.WaitWhilePausedAsync();
                 IAnnonceContent content = await Task<IAnnonceContent>.Factory.StartNew(GetContent);
 
                 _annonces.Add(content);
@@ -137,5 +150,6 @@ namespace SiteParser
                 AnnoncesParced++;
             }
         }
+
     }
 }

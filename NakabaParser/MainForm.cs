@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using SiteParser.Annotations;
@@ -86,11 +87,11 @@ namespace SiteParser
 
             CloneBinding(stopButton, bindingEnabled);
 
-            var bindingIsParcing = new Binding("Visible", bindingSource, "IsParcing", false,
+            var bindingIsParcing = new Binding("Visible", bindingSource, "IsParcing", true,
                 DataSourceUpdateMode.OnPropertyChanged);
             parsingStatusStrip.DataBindings.Add(bindingIsParcing);
 
-            var bindingIsExporting = new Binding("Visible", bindingSource, "IsExporting", false,
+            var bindingIsExporting = new Binding("Visible", bindingSource, "IsExporting", true,
                 DataSourceUpdateMode.OnPropertyChanged);
             exportStatusStrip.DataBindings.Add(bindingIsExporting);
         }
@@ -115,7 +116,7 @@ namespace SiteParser
             {
                 if (value == _isExporting) return;
                 _isExporting = value;
-                exportStatusStrip.Visible = _isExporting;
+                //exportStatusStrip.Visible = _isExporting;
                 OnPropertyChanged();
             }
         }
@@ -227,5 +228,10 @@ namespace SiteParser
         #endregion
 
         #endregion
+
+        private void parsingStatusStrip_VisibleChanged(object sender, EventArgs e)
+        {
+            Debug.WriteLine("VisibleChanged");
+        }
     }
 }

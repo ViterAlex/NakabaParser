@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading;
 using HtmlAgilityPack;
 
 namespace SiteParser.Interfaces
@@ -42,5 +43,8 @@ namespace SiteParser.Interfaces
         string GetTitle();
 
         void Parse(string url);
+        void Parse(string url, PauseTokenSource pauseTokenSource,CancellationTokenSource cancellationTokenSource);
+        void Pause();
+        void Stop();
     }
 }

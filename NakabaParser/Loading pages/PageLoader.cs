@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using HtmlAgilityPack;
 using SiteParser.Interfaces;
 
@@ -13,7 +14,8 @@ namespace SiteParser
         private int _currentPage;
 
         private int _totalPages;
-
+        private PauseTokenSource _pauseTokenSource;
+        private CancellationTokenSource _cancellationTokenSource;
         /// <summary>
         ///     Событие, возникающее при загрузке страницы
         /// </summary>
@@ -57,10 +59,12 @@ namespace SiteParser
         ///     Парсер объявлений
         /// </summary>
         public IAnnonceParser Parser { get; set; }
-
+        /// <summary>
+        /// Отмена загрузки
+        /// </summary>
         public void Cancel()
         {
-            throw new NotImplementedException();
+            _cancellationTokenSource?.Cancel(true);
         }
 
         /// <summary>
@@ -68,15 +72,17 @@ namespace SiteParser
         /// </summary>
         /// <param name="parser">Парсер используемый для парсинга объявлений</param>
         /// <param name="pageUrl">Адрес страницы</param>
-        public void LoadPage(IAnnonceParser parser, string pageUrl)
+        public void LoadAnnoncesOnPage(IAnnonceParser parser, string pageUrl)
         {
             Parser = parser;
-            LoadPage(pageUrl);
+            LoadAnnoncesOnPage(pageUrl);
         }
-
+        /// <summary>
+        /// Пауза загрузки
+        /// </summary>
         public void Pause()
         {
-            throw new NotImplementedException();
+            _pauseTokenSource.IsPaused = !_pauseTokenSource.IsPaused;
         }
 
         /// <summary>
@@ -166,14 +172,16 @@ namespace SiteParser
             return result;
         }
 
-        private async void LoadPage(string pageUrl)
+        private async void LoadAnnoncesOnPage(string pageUrl)
         {
             using (var client = new WebClient())
             {
                 client.Encoding = Encoding.UTF8;
                 var pageHtml = await client.DownloadStringTaskAsync(pageUrl);
                 OnPageLoaded(pageHtml, pageUrl);
-                Parser.Parse(pageHtml);
+                _pauseTokenSource = new PauseTokenSource();
+                _cancellationTokenSource = new CancellationTokenSource();
+                Parser.Parse(pageHtml,_pauseTokenSource, _cancellationTokenSource);
             }
         }
 
@@ -193,7 +201,7 @@ namespace SiteParser
 #else
             if (CurrentPage < TotalPages)
             {
-                LoadPage(GetNextPageUrl(pageUrl));
+                LoadAnnoncesOnPage(GetNextPageUrl(pageUrl));
             }
 #endif
         }
