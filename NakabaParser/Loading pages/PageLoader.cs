@@ -179,8 +179,8 @@ namespace SiteParser
                 client.Encoding = Encoding.UTF8;
                 var pageHtml = await client.DownloadStringTaskAsync(pageUrl);
                 OnPageLoaded(pageHtml, pageUrl);
-                _pauseTokenSource = new PauseTokenSource();
-                _cancellationTokenSource = new CancellationTokenSource();
+                //_pauseTokenSource = new PauseTokenSource();
+                //_cancellationTokenSource = new CancellationTokenSource();
                 Parser.Parse(pageHtml,_pauseTokenSource, _cancellationTokenSource);
             }
         }
@@ -196,14 +196,10 @@ namespace SiteParser
             CurrentPage = GetCurrentPage(pageHtml);
             var totalAnnonces = GetAnnonceCount(pageHtml);
             PageLoaded?.Invoke(this, new PageLoadedEventArgs(CurrentPage, TotalPages, totalAnnonces));
-#if DEBUG
-
-#else
             if (CurrentPage < TotalPages)
             {
                 LoadAnnoncesOnPage(GetNextPageUrl(pageUrl));
             }
-#endif
         }
     }
 }

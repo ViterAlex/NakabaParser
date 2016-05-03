@@ -185,7 +185,6 @@ namespace SiteParser
             this.parsingStatusStrip.TabIndex = 3;
             this.parsingStatusStrip.Text = "statusStrip1";
             this.parsingStatusStrip.Visible = false;
-            this.parsingStatusStrip.VisibleChanged += new System.EventHandler(this.parsingStatusStrip_VisibleChanged);
             // 
             // pageImageStatusLabel
             // 

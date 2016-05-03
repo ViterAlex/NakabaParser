@@ -90,7 +90,7 @@ namespace SiteParser
 
         public void Parse(string url, PauseTokenSource pauseTokenSource,CancellationTokenSource cancellationTokenSource)
         {
-            _pauseToken = pauseTokenSource.Token;
+            //_pauseToken = pauseTokenSource.Token;
             Parse(url);
         }
 

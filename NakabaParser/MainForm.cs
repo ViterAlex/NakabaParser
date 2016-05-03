@@ -30,23 +30,20 @@ namespace SiteParser
         public MainForm()
         {
             InitializeComponent();
-            SetBindings();
+            //SetBindings();
         }
 
         #region Implementation of INotifyPropertyChanged
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        #endregion
-
-        /// <summary>
-        ///     Клонирование привязки на другой контрол
-        /// </summary>
-        private static void CloneBinding(IBindableComponent control, Binding bind)
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            var bind1 = new Binding(bind.PropertyName, bind.DataSource, bind.BindingMemberInfo.BindingMember);
-            control.DataBindings.Add(bind1);
+            PropertyChanged?.Invoke(bindingSource, new PropertyChangedEventArgs(propertyName));
         }
+
+        #endregion
 
         private void exportButton_Click(object sender, EventArgs e)
         {
@@ -57,45 +54,12 @@ namespace SiteParser
         {
             LoadAnnonces?.Invoke(this, new EventArgs());
         }
-
-        [NotifyPropertyChangedInvocator]
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
+        
         private void pauseButton_Click(object sender, EventArgs e)
         {
             Pause?.Invoke(this, new EventArgs());
         }
-
-        private void SetBindings()
-        {
-            bindingSource.DataSource = typeof(MainForm);
-            bindingSource.Add(this);
-            //Привязка к свойство IsParsing
-            var bindingEnabled = new Binding("Enabled", bindingSource, "IsParsing", true,
-                DataSourceUpdateMode.OnPropertyChanged);
-            bindingEnabled.Format += (sender, args) =>
-            {
-                if (args.DesiredType != typeof(bool)) return;
-                var val = (bool)args.Value;
-                loadAnnoncesButton.Enabled = !val;
-            };
-
-            pauseButton.DataBindings.Add(bindingEnabled);
-
-            CloneBinding(stopButton, bindingEnabled);
-
-            var bindingIsParcing = new Binding("Visible", bindingSource, "IsParcing", true,
-                DataSourceUpdateMode.OnPropertyChanged);
-            parsingStatusStrip.DataBindings.Add(bindingIsParcing);
-
-            var bindingIsExporting = new Binding("Visible", bindingSource, "IsExporting", true,
-                DataSourceUpdateMode.OnPropertyChanged);
-            exportStatusStrip.DataBindings.Add(bindingIsExporting);
-        }
-
+        
         private void stopButton_Click(object sender, EventArgs e)
         {
             Stop?.Invoke(this, new EventArgs());
@@ -104,6 +68,16 @@ namespace SiteParser
         private void urlTextBox_TextChanged(object sender, EventArgs e)
         {
             loadAnnoncesButton.Enabled = urlTextBox.Text.Length > 0;
+        }
+
+        private void SetControlsState()
+        {
+            loadAnnoncesButton.Enabled = !_isParsing;
+            parsingStatusStrip.Visible = _isParsing;
+            pauseButton.Enabled = _isParsing;
+            stopButton.Enabled = _isParsing;
+            exportButton.Enabled = !_isExporting;
+            exportStatusStrip.Visible = _isExporting;
         }
 
         #region Implementation of IView
@@ -116,7 +90,7 @@ namespace SiteParser
             {
                 if (value == _isExporting) return;
                 _isExporting = value;
-                //exportStatusStrip.Visible = _isExporting;
+                SetControlsState();
                 OnPropertyChanged();
             }
         }
@@ -203,6 +177,7 @@ namespace SiteParser
             {
                 if (value == _isParsing) return;
                 _isParsing = value;
+                SetControlsState();
                 OnPropertyChanged();
             }
         }
@@ -215,6 +190,7 @@ namespace SiteParser
         public event EventHandler Stop;
         public event EventHandler ExportToWord;
         #endregion
+
         #region Методы
         public string GetUrl()
         {
@@ -228,10 +204,5 @@ namespace SiteParser
         #endregion
 
         #endregion
-
-        private void parsingStatusStrip_VisibleChanged(object sender, EventArgs e)
-        {
-            Debug.WriteLine("VisibleChanged");
-        }
     }
 }
