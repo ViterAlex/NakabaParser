@@ -57,10 +57,14 @@ namespace SiteParser.Interfaces
         /// <summary>
         /// Событие, когда форма запрашивает экспорт в Word
         /// </summary>
-        event EventHandler ExportToWord;
+        event EventHandler<ExportEventArgs> ExportToWord;
         /// <summary>
         /// Получение введённого Url страницы
         /// </summary>
         string GetUrl();
+        /// <summary>
+        /// Окончание загрузки
+        /// </summary>
+        void Finish();
     }
 }

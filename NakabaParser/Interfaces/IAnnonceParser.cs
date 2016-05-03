@@ -43,7 +43,6 @@ namespace SiteParser.Interfaces
         string GetTitle();
 
         void Parse(string url);
-        void Parse(string url, PauseTokenSource pauseTokenSource,CancellationTokenSource cancellationTokenSource);
         void Pause();
         void Stop();
     }

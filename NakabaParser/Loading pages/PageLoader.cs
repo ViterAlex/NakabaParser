@@ -64,7 +64,9 @@ namespace SiteParser
         /// </summary>
         public void Cancel()
         {
-            _cancellationTokenSource?.Cancel(true);
+            _cancellationTokenSource?.Cancel();
+            Parser.Stop();
+            LoadingEnded?.Invoke(this, new EventArgs());
         }
 
         /// <summary>
@@ -74,6 +76,8 @@ namespace SiteParser
         /// <param name="pageUrl">Адрес страницы</param>
         public void LoadAnnoncesOnPage(IAnnonceParser parser, string pageUrl)
         {
+            _cancellationTokenSource = new CancellationTokenSource();
+            _pauseTokenSource = new PauseTokenSource();
             Parser = parser;
             LoadAnnoncesOnPage(pageUrl);
         }
@@ -83,6 +87,7 @@ namespace SiteParser
         public void Pause()
         {
             _pauseTokenSource.IsPaused = !_pauseTokenSource.IsPaused;
+            Parser.Pause();
         }
 
         /// <summary>
@@ -174,15 +179,21 @@ namespace SiteParser
 
         private async void LoadAnnoncesOnPage(string pageUrl)
         {
-            using (var client = new WebClient())
+            try
             {
-                client.Encoding = Encoding.UTF8;
-                var pageHtml = await client.DownloadStringTaskAsync(pageUrl);
-                OnPageLoaded(pageHtml, pageUrl);
-                //_pauseTokenSource = new PauseTokenSource();
-                //_cancellationTokenSource = new CancellationTokenSource();
-                Parser.Parse(pageHtml,_pauseTokenSource, _cancellationTokenSource);
+                using (var client = new WebClient())
+                {
+                    client.Encoding = Encoding.UTF8;
+                    //Исключение, если было запрошено прерывание загрузки
+                    _cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                    await _pauseTokenSource.WaitWhilePausedAsync();
+                    var pageHtml = await client.DownloadStringTaskAsync(pageUrl);
+                    OnPageLoaded(pageHtml, pageUrl);
+                    Parser.Parse(pageHtml);
+                }
             }
+            catch (OperationCanceledException) { }
+
         }
 
         /// <summary>
@@ -192,14 +203,20 @@ namespace SiteParser
         /// <param name="pageUrl">Адрес страницы</param>
         private void OnPageLoaded(string pageHtml, string pageUrl)
         {
-            TotalPages = GetPagesCount(pageHtml);
-            CurrentPage = GetCurrentPage(pageHtml);
-            var totalAnnonces = GetAnnonceCount(pageHtml);
-            PageLoaded?.Invoke(this, new PageLoadedEventArgs(CurrentPage, TotalPages, totalAnnonces));
-            if (CurrentPage < TotalPages)
+            try
             {
-                LoadAnnoncesOnPage(GetNextPageUrl(pageUrl));
+                // исключение, если было запрошено прерывание загрузки
+                _cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                TotalPages = GetPagesCount(pageHtml);
+                CurrentPage = GetCurrentPage(pageHtml);
+                var totalAnnonces = GetAnnonceCount(pageHtml);
+                PageLoaded?.Invoke(this, new PageLoadedEventArgs(CurrentPage, TotalPages, totalAnnonces));
+                if (CurrentPage < TotalPages)
+                {
+                    LoadAnnoncesOnPage(GetNextPageUrl(pageUrl));
+                }
             }
+            catch (OperationCanceledException) { }
         }
     }
 }

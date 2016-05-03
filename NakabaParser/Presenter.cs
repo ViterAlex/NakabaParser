@@ -30,6 +30,7 @@ namespace SiteParser
         private void _annonceParser_ParsingEnded(object sender, EventArgs e)
         {
             _view.IsParsing = false;
+            _view.Finish();
         }
 
         private void _annonceParser_AnnonceParsed(object sender, AnnonceParsedEventArgs e)
@@ -44,7 +45,6 @@ namespace SiteParser
         {
             _view.CurrentPage = e.CurrentPageNumber;
             _view.TotalPages = e.TotalPages;
-            _view.TotalAnnonces = e.TotalAnnonces;
         }
 
         private void _view_Stop(object sender, EventArgs e)
@@ -63,12 +63,12 @@ namespace SiteParser
             _pageLoader.LoadAnnoncesOnPage(_annonceParser, _view.GetUrl());
         }
 
-        private  void _view_ExportToWord(object sender, EventArgs e)
+        private  void _view_ExportToWord(object sender, ExportEventArgs e)
         {
-            ExportToWord();
+            ExportToWord(e.Append);
         }
 
-        private async void ExportToWord()
+        private async void ExportToWord(bool append)
         {
             _view.IsExporting = true;
             WordExporter.ProgressChanged += (o, args) =>
@@ -76,7 +76,7 @@ namespace SiteParser
                 _view.ProgressMessage = args.State;
                 _view.Progress = args.Value;
             };
-            await Task.Factory.StartNew(() => WordExporter.ExportAnnonces(_annonceParser.Annonces));
+            await Task.Factory.StartNew(() => WordExporter.ExportAnnonces(_annonceParser.Annonces,append));
             _view.IsExporting = false;
         }
     }

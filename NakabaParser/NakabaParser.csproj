@@ -94,6 +94,7 @@
   <ItemGroup>
     <Compile Include="ControlHelper.cs" />
     <Compile Include="Export to Word\ExportingProgressChangedEventArgs.cs" />
+    <Compile Include="Export to Word\ExportEventArgs.cs" />
     <Compile Include="Interfaces\IView.cs" />
     <Compile Include="Parsing annonces\Annonce.cs" />
     <Compile Include="Interfaces\IPageLoader.cs" />

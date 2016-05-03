@@ -36,7 +36,6 @@ namespace SiteParser
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.urlTextBox = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.pauseButton = new System.Windows.Forms.Button();
             this.exportButton = new System.Windows.Forms.Button();
             this.loadAnnoncesButton = new System.Windows.Forms.Button();
             this.stopButton = new System.Windows.Forms.Button();
@@ -54,11 +53,15 @@ namespace SiteParser
             this.exportMessageStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.exportProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.bindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.exportContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.appendToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.createNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.parsingStatusStrip.SuspendLayout();
             this.exportStatusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource)).BeginInit();
+            this.exportContextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // flowLayoutPanel1
@@ -101,15 +104,13 @@ namespace SiteParser
             // 
             // tableLayoutPanel2
             // 
-            this.tableLayoutPanel2.ColumnCount = 4;
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel2.ColumnCount = 3;
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Controls.Add(this.pauseButton, 1, 0);
-            this.tableLayoutPanel2.Controls.Add(this.exportButton, 3, 0);
+            this.tableLayoutPanel2.Controls.Add(this.exportButton, 2, 0);
             this.tableLayoutPanel2.Controls.Add(this.loadAnnoncesButton, 0, 0);
-            this.tableLayoutPanel2.Controls.Add(this.stopButton, 2, 0);
+            this.tableLayoutPanel2.Controls.Add(this.stopButton, 1, 0);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 28);
             this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
@@ -119,23 +120,11 @@ namespace SiteParser
             this.tableLayoutPanel2.Size = new System.Drawing.Size(647, 26);
             this.tableLayoutPanel2.TabIndex = 4;
             // 
-            // pauseButton
-            // 
-            this.pauseButton.AutoSize = true;
-            this.pauseButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.pauseButton.Location = new System.Drawing.Point(78, 3);
-            this.pauseButton.Name = "pauseButton";
-            this.pauseButton.Size = new System.Drawing.Size(48, 23);
-            this.pauseButton.TabIndex = 1;
-            this.pauseButton.Text = "Пауза";
-            this.pauseButton.UseVisualStyleBackColor = true;
-            this.pauseButton.Click += new System.EventHandler(this.pauseButton_Click);
-            // 
             // exportButton
             // 
             this.exportButton.AutoSize = true;
             this.exportButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.exportButton.Location = new System.Drawing.Point(179, 3);
+            this.exportButton.Location = new System.Drawing.Point(125, 3);
             this.exportButton.Name = "exportButton";
             this.exportButton.Size = new System.Drawing.Size(97, 23);
             this.exportButton.TabIndex = 3;
@@ -159,7 +148,7 @@ namespace SiteParser
             // 
             this.stopButton.AutoSize = true;
             this.stopButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.stopButton.Location = new System.Drawing.Point(132, 3);
+            this.stopButton.Location = new System.Drawing.Point(78, 3);
             this.stopButton.Name = "stopButton";
             this.stopButton.Size = new System.Drawing.Size(41, 23);
             this.stopButton.TabIndex = 2;
@@ -199,7 +188,7 @@ namespace SiteParser
             // 
             this.currentPageNumStatusLabel.Name = "currentPageNumStatusLabel";
             this.currentPageNumStatusLabel.Size = new System.Drawing.Size(13, 17);
-            this.currentPageNumStatusLabel.Text = "2";
+            this.currentPageNumStatusLabel.Text = "0";
             this.currentPageNumStatusLabel.ToolTipText = "Загружено страниц";
             // 
             // toolStripStatusLabel3
@@ -212,8 +201,8 @@ namespace SiteParser
             // totalPagesStatusLabel
             // 
             this.totalPagesStatusLabel.Name = "totalPagesStatusLabel";
-            this.totalPagesStatusLabel.Size = new System.Drawing.Size(19, 17);
-            this.totalPagesStatusLabel.Text = "31";
+            this.totalPagesStatusLabel.Size = new System.Drawing.Size(13, 17);
+            this.totalPagesStatusLabel.Text = "0";
             this.totalPagesStatusLabel.ToolTipText = "Загружено страниц";
             // 
             // imgAnnonceStatusLabel
@@ -229,7 +218,7 @@ namespace SiteParser
             // 
             this.currentAnnonceNumStatusLabel.Name = "currentAnnonceNumStatusLabel";
             this.currentAnnonceNumStatusLabel.Size = new System.Drawing.Size(13, 17);
-            this.currentAnnonceNumStatusLabel.Text = "5";
+            this.currentAnnonceNumStatusLabel.Text = "0";
             this.currentAnnonceNumStatusLabel.ToolTipText = "Загружено объявлений";
             // 
             // fromStatusLabel
@@ -242,8 +231,8 @@ namespace SiteParser
             // totalAnnoncesStatusLabel
             // 
             this.totalAnnoncesStatusLabel.Name = "totalAnnoncesStatusLabel";
-            this.totalAnnoncesStatusLabel.Size = new System.Drawing.Size(19, 17);
-            this.totalAnnoncesStatusLabel.Text = "40";
+            this.totalAnnoncesStatusLabel.Size = new System.Drawing.Size(13, 17);
+            this.totalAnnoncesStatusLabel.Text = "0";
             this.totalAnnoncesStatusLabel.ToolTipText = "Загружено объявлений";
             // 
             // parsingProgressBar
@@ -280,6 +269,28 @@ namespace SiteParser
             // 
             this.bindingSource.AllowNew = false;
             // 
+            // exportContextMenuStrip
+            // 
+            this.exportContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.appendToolStripMenuItem,
+            this.createNewToolStripMenuItem});
+            this.exportContextMenuStrip.Name = "exportContextMenuStrip";
+            this.exportContextMenuStrip.Size = new System.Drawing.Size(157, 70);
+            // 
+            // appendToolStripMenuItem
+            // 
+            this.appendToolStripMenuItem.Name = "appendToolStripMenuItem";
+            this.appendToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            this.appendToolStripMenuItem.Text = "Дозапись";
+            this.appendToolStripMenuItem.Click += new System.EventHandler(this.appendToolStripMenuItem_Click);
+            // 
+            // createNewToolStripMenuItem
+            // 
+            this.createNewToolStripMenuItem.Name = "createNewToolStripMenuItem";
+            this.createNewToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            this.createNewToolStripMenuItem.Text = "Создать новый";
+            this.createNewToolStripMenuItem.Click += new System.EventHandler(this.createNewToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -301,6 +312,7 @@ namespace SiteParser
             this.exportStatusStrip.ResumeLayout(false);
             this.exportStatusStrip.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource)).EndInit();
+            this.exportContextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -327,8 +339,10 @@ namespace SiteParser
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.Button stopButton;
         private System.Windows.Forms.Button loadAnnoncesButton;
-        private System.Windows.Forms.Button pauseButton;
         private System.Windows.Forms.BindingSource bindingSource;
+        private System.Windows.Forms.ContextMenuStrip exportContextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem appendToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem createNewToolStripMenuItem;
     }
 }
 

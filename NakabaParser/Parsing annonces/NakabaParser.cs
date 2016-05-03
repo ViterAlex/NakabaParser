@@ -16,12 +16,18 @@ namespace SiteParser
         private List<IAnnonceContent> _annonces;
 
         private int _annoncesParced;
+        private CancellationTokenSource _cancellationTokenSource;
         private HtmlDocument _document;
+        private PauseTokenSource _pauseTokenSource;
         private Semaphore _semaphore;
         private HtmlNodeCollection AnnonceNodes { get; set; }
-        private bool ParcingFinished { get; set; }
-        private Semaphore Semaphore => _semaphore ?? (_semaphore = new Semaphore(1, 1));
-        private PauseToken _pauseToken;
+        private Semaphore Semaphore => _semaphore ?? ( _semaphore = new Semaphore(1, 1) );
+
+        private PauseTokenSource PauseToken => _pauseTokenSource ?? ( _pauseTokenSource = new PauseTokenSource() );
+
+        private CancellationTokenSource CancelToken
+            => _cancellationTokenSource ?? ( _cancellationTokenSource = new CancellationTokenSource() );
+
         /// <summary>
         ///     Событие, возникающее по окончании парсинга одного сообщения
         /// </summary>
@@ -47,14 +53,13 @@ namespace SiteParser
                 {
                     ParsingEnded?.Invoke(this, new EventArgs());
                 }
-                ParcingFinished = _annoncesParced != TotalAnnonces;
             }
         }
 
         public int TotalAnnonces { get; set; }
         public HtmlNode AnnonceNode { get; set; }
 
-        public IEnumerable<IAnnonceContent> Annonces => _annonces ?? (_annonces = new List<IAnnonceContent>());
+        public IEnumerable<IAnnonceContent> Annonces => _annonces ?? ( _annonces = new List<IAnnonceContent>() );
 
         public Image GetImage()
         {
@@ -88,42 +93,48 @@ namespace SiteParser
             return string.IsNullOrEmpty(value) ? 0 : decimal.Parse(value, CultureInfo.InvariantCulture);
         }
 
-        public void Parse(string url, PauseTokenSource pauseTokenSource,CancellationTokenSource cancellationTokenSource)
-        {
-            //_pauseToken = pauseTokenSource.Token;
-            Parse(url);
-        }
-
         public void Parse(string url)
         {
             Semaphore.WaitOne();
-            _document = new HtmlDocument();
-            _document.LoadHtml(url);
-            AnnonceNodes = _document.DocumentNode.SelectNodes("//div[starts-with(@class,'objav-lister-item')]");
-            TotalAnnonces += AnnonceNodes.Count;
-            LoadAnnonces();
-            Semaphore.Release();
+            try
+            {
+                CancelToken.Token.ThrowIfCancellationRequested();
+                _document = new HtmlDocument();
+                _document.LoadHtml(url);
+                AnnonceNodes = _document.DocumentNode.SelectNodes("//div[starts-with(@class,'objav-lister-item')]");
+                TotalAnnonces += AnnonceNodes.Count;
+                LoadAnnonces();
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            finally
+            {
+                Semaphore.Release();
+            }
         }
 
         public void Pause()
         {
-            throw new NotImplementedException();
+            PauseToken.IsPaused = !PauseToken.IsPaused;
         }
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            CancelToken.Cancel();
+            ParsingEnded?.Invoke(this, new EventArgs());
         }
 
         public IAnnonceContent GetContent()
         {
+            CancelToken.Token.ThrowIfCancellationRequested();
             return new Annonce
-            {
-                Description = GetDescription(),
-                Title = GetTitle(),
-                Image = GetImage(),
-                Price = GetPrice()
-            };
+                   {
+                       Description = GetDescription(),
+                       Title = GetTitle(),
+                       Image = GetImage(),
+                       Price = GetPrice()
+                   };
         }
 
         public void ClearAnnonces()
@@ -141,15 +152,20 @@ namespace SiteParser
             }
             foreach (HtmlNode annonceNode in AnnonceNodes)
             {
+                await PauseToken.WaitWhilePausedAsync();
                 AnnonceNode = annonceNode;
-                await _pauseToken.WaitWhilePausedAsync();
-                IAnnonceContent content = await Task<IAnnonceContent>.Factory.StartNew(GetContent);
-
-                _annonces.Add(content);
-                AnnonceParsed?.Invoke(null, new AnnonceParsedEventArgs(content, AnnoncesParced + 1, TotalAnnonces));
-                AnnoncesParced++;
+                try
+                {
+                    IAnnonceContent content =
+                        await Task<IAnnonceContent>.Factory.StartNew(GetContent, CancelToken.Token);
+                    _annonces.Add(content);
+                    AnnonceParsed?.Invoke(null, new AnnonceParsedEventArgs(content, AnnoncesParced + 1, TotalAnnonces));
+                    AnnoncesParced++;
+                }
+                catch (OperationCanceledException)
+                {
+                }
             }
         }
-
     }
 }

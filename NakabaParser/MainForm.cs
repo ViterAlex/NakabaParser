@@ -8,8 +8,6 @@ using SiteParser.Interfaces;
 using SiteParser.UserControls;
 
 //TODO: Удалять старые объявления при смене адреса
-//TODO: Дописывать документ, а не создавать заново
-//TODO: Возможность приостановки и отмены скачивания
 //TODO: Задание количества объявлений для скачивания
 //TODO: Фильтрование объявлений по критериям
 //TODO: Парсинг цены из текста объявления, если цена не указана в отдельном блоке
@@ -30,7 +28,7 @@ namespace SiteParser
         public MainForm()
         {
             InitializeComponent();
-            //SetBindings();
+            SetControlsState();
         }
 
         #region Implementation of INotifyPropertyChanged
@@ -47,19 +45,41 @@ namespace SiteParser
 
         private void exportButton_Click(object sender, EventArgs e)
         {
-            ExportToWord?.Invoke(this, new EventArgs());
+            exportContextMenuStrip.Show(sender as Control, exportButton.PointToClient(Cursor.Position));
         }
 
         private void loadAnnoncesButton_Click(object sender, EventArgs e)
         {
             LoadAnnonces?.Invoke(this, new EventArgs());
+            ChangeButton();
         }
-        
+
+        private void ChangeButton([CallerMemberName]string procName = null)
+        {
+            switch (procName)
+            {
+                case "loadAnnoncesButton_Click":
+                    loadAnnoncesButton.Click -= loadAnnoncesButton_Click;
+                    loadAnnoncesButton.Click += pauseButton_Click;
+                    loadAnnoncesButton.Text = "Пауза";
+                    break;
+                case "pauseButton_Click":
+                    loadAnnoncesButton.Text = loadAnnoncesButton.Text == "Продолжить" ? "Пауза" : "Продолжить";
+                    break;
+                case "Finish":
+                    loadAnnoncesButton.Text = "Загрузить";
+                    loadAnnoncesButton.Click -= pauseButton_Click;
+                    loadAnnoncesButton.Click += loadAnnoncesButton_Click;
+                    break;
+            }
+        }
+
         private void pauseButton_Click(object sender, EventArgs e)
         {
             Pause?.Invoke(this, new EventArgs());
+            ChangeButton();
         }
-        
+
         private void stopButton_Click(object sender, EventArgs e)
         {
             Stop?.Invoke(this, new EventArgs());
@@ -72,9 +92,7 @@ namespace SiteParser
 
         private void SetControlsState()
         {
-            loadAnnoncesButton.Enabled = !_isParsing;
             parsingStatusStrip.Visible = _isParsing;
-            pauseButton.Enabled = _isParsing;
             stopButton.Enabled = _isParsing;
             exportButton.Enabled = !_isExporting;
             exportStatusStrip.Visible = _isExporting;
@@ -150,8 +168,11 @@ namespace SiteParser
             {
                 if (value == _progress) return;
                 _progress = value;
-                exportProgressBar.Value = _progress;
-                parsingProgressBar.Value = _progress;
+                this.InvokeEx(new Action(() =>
+                {
+                    exportProgressBar.Value = _progress;
+                    parsingProgressBar.Value = _progress;
+                }));
                 OnPropertyChanged();
             }
         }
@@ -163,7 +184,11 @@ namespace SiteParser
             {
                 if (value == _progressMessage) return;
                 _progressMessage = value;
-                exportMessageStatusLabel.Text = _progressMessage;
+                this.InvokeEx(new Action(() =>
+                {
+                    exportMessageStatusLabel.Text = _progressMessage;
+
+                }));
                 OnPropertyChanged();
             }
         }
@@ -188,13 +213,18 @@ namespace SiteParser
         public event EventHandler LoadAnnonces;
         public event EventHandler Pause;
         public event EventHandler Stop;
-        public event EventHandler ExportToWord;
+        public event EventHandler<ExportEventArgs> ExportToWord;
         #endregion
 
         #region Методы
         public string GetUrl()
         {
             return urlTextBox.Text;
+        }
+
+        public void Finish()
+        {
+            ChangeButton();
         }
 
         public void AddAnnonce(IAnnonceContent content)
@@ -204,5 +234,15 @@ namespace SiteParser
         #endregion
 
         #endregion
+
+        private void appendToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportToWord?.Invoke(this, new ExportEventArgs(true));
+        }
+
+        private void createNewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportToWord?.Invoke(this, new ExportEventArgs());
+        }
     }
 }
