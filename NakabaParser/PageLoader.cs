@@ -177,15 +177,10 @@ namespace SiteParser
             CurrentPage = GetCurrentPage(pageHtml);
             var totalAnnonces = GetAnnonceCount(pageHtml);
             PageLoaded?.Invoke(this, new PageLoadedEventArgs(CurrentPage, TotalPages, totalAnnonces));
-#if DEBUG
-
-            return;
-#else
             if (CurrentPage < TotalPages)
             {
                 LoadPage(GetNextPageUrl(pageUrl));
             }
-#endif
-            }
+        }
     }
 }
