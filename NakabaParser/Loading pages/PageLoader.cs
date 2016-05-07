@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading;
 using HtmlAgilityPack;
@@ -9,58 +8,20 @@ using SiteParser.Interfaces;
 
 namespace SiteParser
 {
-    public class PageLoader : IPageLoader
+    public partial class PageLoader : IPageLoader
     {
-        private int _currentPage;
+        public PageLoader()
+        {
+            LoadingEnded += (sender, args) => { WebClient.Dispose(); };
+        }
 
-        private int _totalPages;
-        private PauseTokenSource _pauseTokenSource;
-        private CancellationTokenSource _cancellationTokenSource;
         /// <summary>
         ///     Событие, возникающее при загрузке страницы
         /// </summary>
         public event EventHandler<PageLoadedEventArgs> PageLoaded;
 
         /// <summary>
-        ///     Номер текущей загружаемой страницы
-        /// </summary>
-        public int CurrentPage
-        {
-            get { return _currentPage; }
-            set
-            {
-                _currentPage = value;
-                if (_currentPage == _totalPages)
-                {
-                    LoadingEnded?.Invoke(this, new EventArgs());
-                }
-            }
-        }
-
-        /// <summary>
-        ///     Общее количество страниц
-        /// </summary>
-        public int TotalPages
-        {
-            get { return _totalPages; }
-            set
-            {
-                _totalPages = value;
-                if (_currentPage == _totalPages)
-                {
-                    LoadingEnded?.Invoke(this, new EventArgs());
-                }
-            }
-        }
-
-        public bool IsBusy { get; set; }
-
-        /// <summary>
-        ///     Парсер объявлений
-        /// </summary>
-        public IAnnonceParser Parser { get; set; }
-        /// <summary>
-        /// Отмена загрузки
+        ///     Отмена загрузки
         /// </summary>
         public void Cancel()
         {
@@ -81,8 +42,9 @@ namespace SiteParser
             Parser = parser;
             LoadAnnoncesOnPage(pageUrl);
         }
+
         /// <summary>
-        /// Пауза загрузки
+        ///     Пауза загрузки
         /// </summary>
         public void Pause()
         {
@@ -177,23 +139,25 @@ namespace SiteParser
             return result;
         }
 
+        /// <summary>
+        ///     Метод вызывающий загрузку объявлений с определённой страницы
+        /// </summary>
+        /// <param name="pageUrl">Адрес страницы, с которой нужно загрузить объявления</param>
         private async void LoadAnnoncesOnPage(string pageUrl)
         {
             try
             {
-                using (var client = new WebClient())
-                {
-                    client.Encoding = Encoding.UTF8;
-                    //Исключение, если было запрошено прерывание загрузки
-                    _cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                    await _pauseTokenSource.WaitWhilePausedAsync();
-                    var pageHtml = await client.DownloadStringTaskAsync(pageUrl);
-                    OnPageLoaded(pageHtml, pageUrl);
-                    Parser.Parse(pageHtml);
-                }
+                WebClient.Encoding = Encoding.UTF8;
+                //Исключение, если было запрошено прерывание загрузки
+                _cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                await _pauseTokenSource.WaitWhilePausedAsync();
+                var pageHtml = await WebClient.DownloadStringTaskAsync(pageUrl);
+                OnPageLoaded(pageHtml, pageUrl);
+                Parser.Parse(pageHtml);
             }
-            catch (OperationCanceledException) { }
-
+            catch (OperationCanceledException)
+            {
+            }
         }
 
         /// <summary>
@@ -216,7 +180,9 @@ namespace SiteParser
                     LoadAnnoncesOnPage(GetNextPageUrl(pageUrl));
                 }
             }
-            catch (OperationCanceledException) { }
+            catch (OperationCanceledException)
+            {
+            }
         }
     }
 }

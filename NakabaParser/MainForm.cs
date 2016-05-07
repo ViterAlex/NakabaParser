@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using SiteParser.Annotations;
@@ -45,7 +44,8 @@ namespace SiteParser
 
         private void exportButton_Click(object sender, EventArgs e)
         {
-            exportContextMenuStrip.Show(sender as Control, exportButton.PointToClient(Cursor.Position));
+            var ctrl = (Control) sender;
+            ctrl.ContextMenuStrip.Show(Cursor.Position);
         }
 
         private void loadAnnoncesButton_Click(object sender, EventArgs e)

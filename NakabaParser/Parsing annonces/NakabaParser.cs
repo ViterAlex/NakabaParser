@@ -11,23 +11,8 @@ using SiteParser.Interfaces;
 
 namespace SiteParser
 {
-    public class NakabaParser : IAnnonceParser
+    public partial class NakabaParser : IAnnonceParser
     {
-        private List<IAnnonceContent> _annonces;
-
-        private int _annoncesParced;
-        private CancellationTokenSource _cancellationTokenSource;
-        private HtmlDocument _document;
-        private PauseTokenSource _pauseTokenSource;
-        private Semaphore _semaphore;
-        private HtmlNodeCollection AnnonceNodes { get; set; }
-        private Semaphore Semaphore => _semaphore ?? ( _semaphore = new Semaphore(1, 1) );
-
-        private PauseTokenSource PauseToken => _pauseTokenSource ?? ( _pauseTokenSource = new PauseTokenSource() );
-
-        private CancellationTokenSource CancelToken
-            => _cancellationTokenSource ?? ( _cancellationTokenSource = new CancellationTokenSource() );
-
         /// <summary>
         ///     Событие, возникающее по окончании парсинга одного сообщения
         /// </summary>
@@ -42,24 +27,6 @@ namespace SiteParser
         ///     Событие, возникающее при очистке списка объявлений
         /// </summary>
         public event EventHandler Cleared;
-
-        public int AnnoncesParced
-        {
-            get { return _annoncesParced; }
-            set
-            {
-                _annoncesParced = value;
-                if (_annoncesParced == TotalAnnonces)
-                {
-                    ParsingEnded?.Invoke(this, new EventArgs());
-                }
-            }
-        }
-
-        public int TotalAnnonces { get; set; }
-        public HtmlNode AnnonceNode { get; set; }
-
-        public IEnumerable<IAnnonceContent> Annonces => _annonces ?? ( _annonces = new List<IAnnonceContent>() );
 
         public Image GetImage()
         {

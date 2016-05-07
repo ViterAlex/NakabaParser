@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using SiteParser.Interfaces;
 
@@ -9,9 +6,9 @@ namespace SiteParser
 {
     public class Presenter
     {
-        private IView _view;
-        private IPageLoader _pageLoader;
-        private IAnnonceParser _annonceParser;
+        private readonly IView _view;
+        private readonly IPageLoader _pageLoader;
+        private readonly IAnnonceParser _annonceParser;
 
         public Presenter(IView view)
         {

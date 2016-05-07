@@ -124,6 +124,7 @@ namespace SiteParser
             // 
             this.exportButton.AutoSize = true;
             this.exportButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.exportButton.ContextMenuStrip = this.exportContextMenuStrip;
             this.exportButton.Location = new System.Drawing.Point(125, 3);
             this.exportButton.Name = "exportButton";
             this.exportButton.Size = new System.Drawing.Size(97, 23);
@@ -275,7 +276,9 @@ namespace SiteParser
             this.appendToolStripMenuItem,
             this.createNewToolStripMenuItem});
             this.exportContextMenuStrip.Name = "exportContextMenuStrip";
-            this.exportContextMenuStrip.Size = new System.Drawing.Size(157, 70);
+            this.exportContextMenuStrip.ShowImageMargin = false;
+            this.exportContextMenuStrip.ShowItemToolTips = false;
+            this.exportContextMenuStrip.Size = new System.Drawing.Size(132, 48);
             // 
             // appendToolStripMenuItem
             // 

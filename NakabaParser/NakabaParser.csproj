@@ -96,9 +96,11 @@
     <Compile Include="Export to Word\ExportingProgressChangedEventArgs.cs" />
     <Compile Include="Export to Word\ExportEventArgs.cs" />
     <Compile Include="Interfaces\IView.cs" />
+    <Compile Include="Loading pages\PageLoader.Properties.cs" />
     <Compile Include="Parsing annonces\Annonce.cs" />
     <Compile Include="Interfaces\IPageLoader.cs" />
     <Compile Include="Loading pages\PageLoadedEventArgs.cs" />
+    <Compile Include="Parsing annonces\NakabaParser.Properties.cs" />
     <Compile Include="PauseToken.cs" />
     <Compile Include="PauseTokenSource.cs" />
     <Compile Include="Presenter.cs" />
@@ -142,7 +144,7 @@
     </Compile>
     <None Include="NakabaClassDiagram.cd" />
     <None Include="Docs\annonceTemplate.dotm">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="NakabaParser_TemporaryKey.pfx" />
     <None Include="packages.config" />
